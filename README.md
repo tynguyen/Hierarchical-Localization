@@ -17,6 +17,23 @@ With `hloc`, you can:
 ##
 
 ## Installation
+### Install on Local Dockers
+- First, install conda
+```
+wget https://repo.anaconda.com/archive/Anaconda3-2021.05-Linux-x86_64.sh
+bash Anaconda3-2021.05-Linux-x86_64.sh
+rm Anaconda3-2021.05-Linux-x86_64.sh
+```
+- Create and env
+```
+conda create -n env_hlocl python=3.7
+conda activate env_hlocl
+cd /home/tynguyen/github_ws/3d_body_res/Hierarchical-Localization
+pip install -r requirements
+pip install git+https://github.com/mihaidusmanu/pycolmap
+```
+
+
 
 `hloc` requires Python >=3.6, PyTorch >=1.1, and [COLMAP](https://colmap.github.io/index.html). Other minor dependencies are listed in `requirements.txt`.  For pose estimation, we use [pycolmap](https://github.com/mihaidusmanu/pycolmap), which can be installed as:
 
@@ -34,7 +51,30 @@ docker run -it --rm -p 8888:8888 hloc:latest  # for GPU support, add `--runtime=
 jupyter notebook --ip 0.0.0.0 --port 8888 --no-browser --allow-root
 ```
 
+## Usage
+### Indoor Localization
+1. (1st time only) Install ipykernel to run jupyter notebook with conda envs
+```
+conda install -c anaconda ipykernel
+```
 
+2. (1st time only) Then, install the created conda env (make it appear in the jupyter notebook env choices)
+```
+python -m ipykernel install --user --name=env_hlocl
+```
+
+3. (Every time) Now, run jupyter notebook.
+On the Docker that maps port 7008:7008,
+```
+jupyter notebook pipeline_InLoc.ipynb --ip 0.0.0.0 --port 7008 --no-browser
+```
+
+On the host machine,
+```
+http://127.0.0.1:7008/
+```
+
+NOTE: make sure to change the env after launching the notebook to `env_hlocl`
 
 ## General pipeline
 
@@ -134,7 +174,7 @@ If you report any of the above results in a publication, or use any of the tools
 <details>
 <summary>[Click to expand]</summary>
 
-Each localization run generates a pickle log file. For each query, it contains the selected database images, their matches, and information from the pose solver, such as RANSAC inliers. It can thus be parsed to gather statistics and analyze failure modes or difficult scenarios. 
+Each localization run generates a pickle log file. For each query, it contains the selected database images, their matches, and information from the pose solver, such as RANSAC inliers. It can thus be parsed to gather statistics and analyze failure modes or difficult scenarios.
 
 We also provide some visualization tools in [`hloc/visualization.py`](./hloc/visualization.py) to visualize some attributes of the 3D SfM model, such as visibility of the keypoints, their track length, or estimated sparse depth (like below).
 
@@ -152,7 +192,7 @@ If your code is based on PyTorch: simply add a new interface in [`hloc/extractor
 
 If your code is based on TensorFlow: you will need to either modify `hloc/extract_features.py` and `hloc/match_features.py`, or export yourself the features and matches to HDF5 files, described below.
 
-In a feature file, each key corresponds to the relative path of an image w.r.t. the dataset root (e.g. `db/1.jpg` for Aachen), and has one dataset per prediction (e.g. `keypoints` and `descriptors`, with shape Nx2 and DxN). 
+In a feature file, each key corresponds to the relative path of an image w.r.t. the dataset root (e.g. `db/1.jpg` for Aachen), and has one dataset per prediction (e.g. `keypoints` and `descriptors`, with shape Nx2 and DxN).
 
 In a match file, each key corresponds to the string `path0.replace('/', '-')+'_'+path1.replace('/', '-')` and has a dataset `matches0` with shape N. It indicates, for each keypoint in the first image, the index of the matching keypoint in the second image, or `-1` if the keypoint is unmatched.
 </details>
